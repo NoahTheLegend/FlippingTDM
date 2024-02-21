@@ -84,6 +84,7 @@ void onTick(CBlob@ this)
 	}
 
 	CControls@ controls = this.getControls();
+	if (controls is null) return;
 
 	// drop / pickup / throw
 	if (controls.ActionKeyPressed(AK_PICKUP_MODIFIER))

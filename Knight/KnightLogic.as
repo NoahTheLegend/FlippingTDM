@@ -20,6 +20,7 @@ void knight_actorlimit_setup(CBlob@ this)
 
 bool knight_has_hit_actor(CBlob@ this, CBlob@ actor)
 {
+	if (this is null || actor is null) return false;
 	u16[]@ networkIDs;
 
 	this.get("LimitedActors", @networkIDs);
@@ -402,7 +403,7 @@ void onTick(CBlob@ this)
 
 		// shield up = collideable
 
-		if ((knight.state == KnightStates::shielding && direction == -1 * ff) ||
+		if ((knight.state == KnightStates::shielding && direction == -1) ||
 		        knight.state == KnightStates::shieldgliding)
 		{
 			if (!this.hasTag("shieldplatform"))

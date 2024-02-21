@@ -44,8 +44,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 		if (isExplosionHitter(customData)) //bomb jump
 		{
 			Vec2f vel = this.getVelocity();
-			this.setVelocity(Vec2f(0.0f, Maths::Min(0.0f, vel.y)));
-
+			this.setVelocity(Vec2f(0.0f, is_flipped ? Maths::Max(0.0f, vel.y) : Maths::Min(0.0f, vel.y)));
 			Vec2f bombforce = Vec2f(0.0f, ((is_flipped ? velocity.y < 0 : velocity.y > 0) ? 0.7f : -1.3f));
 
 			bombforce.Normalize();
@@ -53,16 +52,16 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 			bombforce.y -= 2 * ff;
 
 			bool fl = this.isFacingLeft();
-			if (is_flipped) fl = !fl;
+			//if (is_flipped) fl = !fl;
 
 			if (!has_ground && !this.isOnLadder())
 			{
-				if (fl && (is_flipped ? vel.x < 0 : vel.x > 0))
+				if ((is_flipped ? !fl : fl) && vel.x > 0)
 				{
 					bombforce.x += 50;
 					bombforce.y -= 80;
 				}
-				else if (!fl && (is_flipped ? vel.x > 0 : vel.x < 0))
+				else if ((is_flipped ? fl : !fl) && vel.x < 0)
 				{
 					bombforce.x -= 50;
 					bombforce.y -= 80;
@@ -76,7 +75,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 			{
 				bombforce.x -= 5;
 			}
-
+			
 			bombforce.y *= ff;
 			this.AddForce(bombforce);
 			this.Tag("dont stop til ground");

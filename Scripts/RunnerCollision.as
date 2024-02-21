@@ -42,20 +42,23 @@ bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 			//knight shield up logic
 
             bool is_flipped = getRules().get_bool("flipped");
+			f32 ff = is_flipped ? -1 : 1;
 
 			//we're a platform if they aren't pressing down
 			bool thisplatform = this.hasTag("shieldplatform") &&
 								!blob.isKeyPressed(key_down);
+			
 
 			if (thisplatform || blob.getName() == "knight")
 			{
 				Vec2f pos = this.getPosition();
 				Vec2f bpos = blob.getPosition();
 
-				const f32 size = 9.0f;
+				const f32 size = 9.0f * ff;
 
 				if (thisplatform)
 				{
+					printf("f "+is_flipped+" bpos "+bpos.y+" pos "+pos.y+" s "+size+" p "+thisplatform);
 					if ((is_flipped ? bpos.y > pos.y + size : bpos.y < pos.y - size) && thisplatform)
 					{
 						return true;
