@@ -60,12 +60,12 @@ void onRestart(CRules@ this)
 	}
 
 	this.set_f32("global_rotation", 0);
-	Flip(this, false);
+	Flip(this, false, 10*30);
 }
 
-void Flip(CRules@ this, bool flip)
+void Flip(CRules@ this, bool flip, u32 time = (grav_flip_period+XORRandom(time_extra_rnd+1))*30)
 {
-	this.set_u32("flip_time", getGameTime() + (grav_flip_period+XORRandom(time_extra_rnd+1))*30);
+	this.set_u32("flip_time", getGameTime() + time);
 	this.set_bool("flipped", flip);
 	this.set_f32("grav", 1.0f);
 
@@ -78,17 +78,17 @@ void Flip(CRules@ this, bool flip)
 
 	map.AddBackground(prefix+"BackgroundPlains.png", Vec2f(0.0f, flip ? -340.0f : -40.0f), Vec2f(0.06f, 20.0f), color_white);
 	map.AddBackground(prefix+"BackgroundTrees.png",  Vec2f(0.0f, flip ? -420.0f : -100.0f), Vec2f(0.18f, 70.0f), color_white);
-	map.AddBackground(prefix+"BackgroundIsland.png", Vec2f(0.0f, flip ? -560.0f : -220.0f), Vec2f(0.3f, 180.0f), color_white);
+	map.AddBackground(prefix+"BackgroundIsland.png", Vec2f(0.0f, flip ? -420.0f : -220.0f), Vec2f(0.3f, 180.0f), color_white);
 }
 
 const f32 init_grav = 9.81f;
-const f32 grav_flip_period = 5; // seconds
+const f32 grav_flip_period = 3; // seconds
 const f32 grav_flip_rate = 30; // ticks
-const f32 time_extra_rnd = 40;
+const f32 time_extra_rnd = 27;
 const u8 warn_time = 10;
 
-Vec2f msg_pos_init = Vec2f(getDriver().getScreenWidth()/2, 100);
-Vec2f msg_pos_warn = msg_pos_init + Vec2f(0, 100);
+Vec2f msg_pos_init = Vec2f(getDriver().getScreenWidth()/2, 110);
+Vec2f msg_pos_warn = msg_pos_init + Vec2f(0, 90);
 Vec2f msg_pos_old = msg_pos_init;
 
 void onRender(CRules@ this)
@@ -97,6 +97,12 @@ void onRender(CRules@ this)
 
 	f32 cam_rot = this.get_f32("global_rotation");
 	f32 f = Maths::Clamp(Maths::Lerp(cam_rot, is_flipped ? 181.0f : -1, 0.2f), 0, 180);
+
+	if (isClient() && isServer())
+	{
+		if (getControls().isKeyJustPressed(KEY_LCONTROL))
+			Flip(this, !is_flipped, 9999999999999);
+	}
 
 	if (isClient())
 	{

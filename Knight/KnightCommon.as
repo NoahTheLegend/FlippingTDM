@@ -125,23 +125,28 @@ bool inMiddleOfAttack(u8 state)
 
 f32 getCutAngle(CBlob@ this, u8 state)
 {
-	f32 attackAngle = (this.isFacingLeft() ? 180.0f : 0.0f);
+	bool fl = this.isFacingLeft();
+	bool is_flipped = getRules().get_bool("flipped");
+	f32 ff = is_flipped ? -1 : 1;
+
+	f32 attackAngle = (fl ? 180.0f : 0.0f);
+	if (is_flipped) attackAngle += 180;
 
 	if (state == KnightStates::sword_cut_mid)
 	{
-		attackAngle += (this.isFacingLeft() ? 30.0f : -30.0f);
+		attackAngle += (fl ? 30.0f : -30.0f);
 	}
 	else if (state == KnightStates::sword_cut_mid_down)
 	{
-		attackAngle -= (this.isFacingLeft() ? 30.0f : -30.0f);
+		attackAngle -= (fl ? 30.0f : -30.0f);
 	}
 	else if (state == KnightStates::sword_cut_up)
 	{
-		attackAngle += (this.isFacingLeft() ? 80.0f : -80.0f);
+		attackAngle += (fl ? 80.0f : -80.0f);
 	}
 	else if (state == KnightStates::sword_cut_down)
 	{
-		attackAngle -= (this.isFacingLeft() ? 80.0f : -80.0f);
+		attackAngle -= (fl ? 80.0f : -80.0f);
 	}
 
 	return attackAngle;
@@ -154,9 +159,11 @@ f32 getCutAngle(CBlob@ this)
 
 	bool is_flipped = getRules().get_bool("flipped");
 	f32 ff = is_flipped ? -1 : 1;
+
+	if (is_flipped) aimpos.RotateBy(180, this.getPosition());
 	
 	Vec2f vec;
-	int direction = this.getAimDirection(vec) * ff;
+	int direction = this.getAimDirection(vec);
 
 	if (direction == -1)
 	{

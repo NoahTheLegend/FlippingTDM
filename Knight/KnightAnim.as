@@ -127,11 +127,11 @@ void onTick(CSprite@ this)
 		Vec2f oldvel = blob.getOldVelocity();
 
 		//TODO: trigger frame one the first time we server_Die()()
-		if (vel.y < -1.0f)
+		if (is_flipped ? vel.y > 1.0f : vel.y < -1.0f)
 		{
 			this.SetFrameIndex(1);
 		}
-		else if (vel.y > 1.0f)
+		else if (is_flipped ? vel.y < -1.0f : vel.y > 1.0f)
 		{
 			this.SetFrameIndex(3);
 		}
@@ -294,7 +294,7 @@ void onTick(CSprite@ this)
 					}
 					else if (direction == -1)
 					{
-						if (vec.y > -0.97)
+						if (is_flipped ? vec.y < 0.97 : vec.y > -0.97)
 						{
 							this.animation.frame = 1;
 						}

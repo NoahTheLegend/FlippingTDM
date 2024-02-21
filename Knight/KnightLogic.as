@@ -402,7 +402,7 @@ void onTick(CBlob@ this)
 
 		// shield up = collideable
 
-		if ((knight.state == KnightStates::shielding && direction == -1) ||
+		if ((knight.state == KnightStates::shielding && direction == -1 * ff) ||
 		        knight.state == KnightStates::shieldgliding)
 		{
 			if (!this.hasTag("shieldplatform"))
@@ -843,9 +843,8 @@ class SwordDrawnState : KnightState
 					Vec2f pos = this.getPosition();
 
 					bool is_flipped = getRules().get_bool("flipped");
-					if (is_flipped) aimpos.RotateBy(180);
 
-					if (aimpos.y < pos.y)
+					if (is_flipped ? aimpos.y > pos.y : aimpos.y < pos.y)
 					{
 						knight.state = KnightStates::sword_cut_mid;
 					}
@@ -906,7 +905,7 @@ class CutState : KnightState
 		{
 			f32 attackarc = 90.0f;
 			f32 attackAngle = getCutAngle(this, knight.state);
-
+			
 			if (knight.state == KnightStates::sword_cut_down)
 			{
 				attackarc *= 0.9f;
@@ -1247,7 +1246,11 @@ void DoAttack(CBlob@ this, f32 damage, f32 aimangle, f32 arcdegrees, u8 type, in
 	Vec2f vel = this.getVelocity();
 	Vec2f thinghy(1, 0);
 	thinghy.RotateBy(aimangle);
-	Vec2f pos = blobPos - thinghy * 6.0f + vel + Vec2f(0, -2);
+	
+	bool is_flipped = getRules().get_bool("flipped");
+	f32 ff = is_flipped ? -1 : 1;
+
+	Vec2f pos = blobPos - thinghy * 6.0f + vel + Vec2f(0, -2) * ff;
 	vel.Normalize();
 
 	f32 attack_distance = Maths::Min(DEFAULT_ATTACK_DISTANCE + Maths::Max(0.0f, 1.75f * this.getShape().vellen * (vel * thinghy)), MAX_ATTACK_DISTANCE);
@@ -1541,6 +1544,8 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 						force *= (vellen - 3.5f) / 6 + 0.759f;
 					}
 
+					force.y *= ff;
+
 					blob.AddForce(force);
 					force *= 0.5f;
 					this.AddForce(Vec2f(-force.x, force.y));
@@ -1633,8 +1638,12 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 		return;
 	}
 
-	if (hitBlob is null) return;
+	if (hitBlob is null || this is null) return;
 
+	bool is_flipped = getRules().get_bool("flipped");
+	f32 ff = is_flipped ? -1 : 1;
+
+	//printf(""+blockAttack(hitBlob, velocity * ff, 0.0f));
 	if (customData == Hitters::sword &&
 	        ( //is a jab - note we dont have the dmg in here at the moment :/
 	            knight.state == KnightStates::sword_cut_mid ||
@@ -1654,8 +1663,6 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 		this.getSprite().PlaySound("/Stun", 1.0f, this.getSexNum() == 0 ? 1.0f : 1.5f);
 	}
 }
-
-
 
 // bomb pick menu
 
