@@ -60,7 +60,7 @@ void onRestart(CRules@ this)
 	}
 
 	this.set_f32("global_rotation", 0);
-	Flip(this, false, 10*30);
+	Flip(this, false, 10*30 + XORRandom(11)*30);
 }
 
 void Flip(CRules@ this, bool flip, u32 time = (grav_flip_period+XORRandom(time_extra_rnd+1))*30)
@@ -79,6 +79,18 @@ void Flip(CRules@ this, bool flip, u32 time = (grav_flip_period+XORRandom(time_e
 	map.AddBackground(prefix+"BackgroundPlains.png", Vec2f(0.0f, flip ? -340.0f : -40.0f), Vec2f(0.06f, 20.0f), color_white);
 	map.AddBackground(prefix+"BackgroundTrees.png",  Vec2f(0.0f, flip ? -420.0f : -100.0f), Vec2f(0.18f, 70.0f), color_white);
 	map.AddBackground(prefix+"BackgroundIsland.png", Vec2f(0.0f, flip ? -420.0f : -220.0f), Vec2f(0.3f, 180.0f), color_white);
+
+	if (isServer())
+	{
+		CBlob@[] df;
+		map.getBlobsInBox(Vec2f(0, 0), Vec2f(map.tilemapwidth * 8, map.tilemapheight * 8), @df);
+
+		for (int i = 0; i < df.size(); i++)
+		{
+			if (df[i] is null || df[i].getMass() < 1.0f) continue;
+			df[i].AddForce(Vec2f(0, -0.00001f));
+		}
+	}
 }
 
 const f32 init_grav = 9.81f;
@@ -107,20 +119,38 @@ void onRender(CRules@ this)
 	if (isClient())
 	{
 		CCamera@ cam = getCamera();
-		cam.setRotation(getLocalPlayerBlob() is null ? 0 : is_flipped ? f : -f);
+		//cam.setRotation(getLocalPlayerBlob() is null ? 0 : is_flipped ? f : -f);
+		cam.setRotation(is_flipped ? f : -f);
 	}
 	this.set_f32("global_rotation", f);
 
 	if (!isClient()) return;
 	f32 gt = getGameTime();
 	f32 endtime = this.get_u32("flip_time");
-	u8 s = Maths::Clamp(Maths::Floor((endtime-gt)/30), 0, 255);
+	int diff = (endtime-gt);
+	u8 s = Maths::Clamp(Maths::Ceil(diff/30), 0, 255);
 	bool warn = s <= warn_time;
 	SColor col = SColor(255,255,255,255);
 
 	Vec2f msg_pos = msg_pos_old;
 	if (warn)
 	{
+		if (getLocalPlayerBlob() !is null)
+		{
+			if (diff % 30 == 0)
+			{
+				if (!this.hasTag("flip_soundplay"))
+				{
+					this.Tag("flip_soundplay");
+					Sound::Play("select.ogg", getLocalPlayerBlob().getPosition(), 1.0f, 1.25f);
+				}
+			}
+			else
+			{
+				this.Untag("flip_soundplay");
+			}
+		}
+
 		msg_pos = Vec2f_lerp(msg_pos_old, msg_pos_warn, 0.5f);
 		col = SColor(255,200,33,25);
 	}

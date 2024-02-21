@@ -54,11 +54,11 @@ bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 				Vec2f pos = this.getPosition();
 				Vec2f bpos = blob.getPosition();
 
-				const f32 size = 9.0f * ff;
+				const f32 size = 9.0f;
 
 				if (thisplatform)
 				{
-					printf("f "+is_flipped+" bpos "+bpos.y+" pos "+pos.y+" s "+size+" p "+thisplatform);
+					//printf("f "+is_flipped+" bpos "+bpos.y+" pos "+pos.y+" s "+size+" p "+thisplatform);
 					if ((is_flipped ? bpos.y > pos.y + size : bpos.y < pos.y - size) && thisplatform)
 					{
 						return true;
