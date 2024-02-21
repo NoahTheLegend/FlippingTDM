@@ -59,12 +59,7 @@ void onTick(CMovement@ this)
 		right = temp1;
 	}
 
-	f32 f = (is_flipped ? 1 : -1) * getRules().get_f32("global_rotation");
-	blob.setAngleDegrees(f);
-	blob.AddForce(Vec2f(0, -0.0001f)); // update shape, avoid getting stuck at old gravity due to shape optimization
-
 	const bool isknocked = isKnocked(blob);
-
 	const bool is_client = getNet().isClient();
 
 	CMap@ map = blob.getMap();

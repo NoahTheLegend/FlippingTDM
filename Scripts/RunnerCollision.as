@@ -93,6 +93,11 @@ bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 
 void onTick(CBlob@ this)
 {
+	bool is_flipped = getRules().get_bool("flipped");
+	f32 f = (is_flipped ? 1 : -1) * getRules().get_f32("global_rotation");
+	this.setAngleDegrees(f);
+	this.AddForce(Vec2f(0, -0.0001f)); // update shape, avoid getting stuck at old gravity due to shape optimization
+
 	if (hasJustCrouched(this))
 	{
 		const uint count = this.getTouchingCount();
