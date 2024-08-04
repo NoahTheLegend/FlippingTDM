@@ -1226,7 +1226,7 @@ void CycleToBombType(CBlob@ this, u8 bombType)
 	this.set_u8("bomb type", bombType);
 	if (this.isMyPlayer())
 	{
-		Sound::Play("/CycleInventory.ogg");
+		//Sound::Play("/CycleInventory.ogg");
 	}
 }
 
