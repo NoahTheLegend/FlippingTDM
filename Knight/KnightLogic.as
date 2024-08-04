@@ -8,7 +8,7 @@
 #include "KnockedCommon.as"
 #include "Help.as";
 #include "Requirements.as"
-
+#include "StandardControlsCommon.as";
 
 //attacks limited to the one time per-actor before reset.
 
@@ -75,6 +75,12 @@ void onInit(CBlob@ this)
 
 	this.set("knightStates", @states);
 	this.set_s32("currentKnightState", 0);
+
+	ControlsSwitch@ controls_switch = @onSwitch;
+	this.set("onSwitch handle", @controls_switch);
+
+	ControlsCycle@ controls_cycle = @onCycle;
+	this.set("onCycle handle", @controls_cycle);
 
 	this.set_f32("gib health", -1.5f);
 	addShieldVars(this, SHIELD_BLOCK_ANGLE, 2.0f, 5.0f);
@@ -1827,5 +1833,59 @@ void CheckSelectedBombRemovedFromInventory(CBlob@ this, CBlob@ blob)
 	if (bombTypeNames.find(name) > -1 && this.getBlobCount(name) == 0)
 	{
 		SetFirstAvailableBomb(this);
+	}
+}
+
+
+// clientside
+void onCycle(CBitStream@ params)
+{
+	u16 this_id;
+	if (!params.saferead_u16(this_id)) return;
+
+	CBlob@ this = getBlobByNetworkID(this_id);
+	if (this is null) return;
+
+	if (bombTypeNames.length == 0) return;
+
+	// cycle bombs
+	u8 type = this.get_u8("bomb type");
+	int count = 0;
+	while (count < bombTypeNames.length)
+	{
+		type++;
+		count++;
+		if (type >= bombTypeNames.length)
+			type = 0;
+		if (hasBombs(this, type))
+		{
+			CycleToBombType(this, type);
+			CBitStream sparams;
+			sparams.write_u8(type);
+			this.SendCommand(this.getCommandID("switch"), sparams);
+			break;
+		}
+	}
+}
+
+void onSwitch(CBitStream@ params)
+{
+	u16 this_id;
+	if (!params.saferead_u16(this_id)) return;
+
+	CBlob@ this = getBlobByNetworkID(this_id);
+	if (this is null) return;
+
+	if (bombTypeNames.length == 0) return;
+
+	u8 type;
+	if (!params.saferead_u8(type)) return;
+
+	if (hasBombs(this, type))
+	{
+		CycleToBombType(this, type);
+		CBitStream sparams;
+		sparams.write_u8(type);
+		this.SendCommand(this.getCommandID("switch"), sparams);
 	}
 }
